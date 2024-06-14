@@ -1,11 +1,29 @@
-const express = require('express'); //Trae el paquete express
-const app = express(); //Crea una instancia de express
-const port = 3000; //Puerto en el que se va a correr el servidor
+const express = require('express');
+const routerApi = require('./routes/index');
 
-app.get('/', (req, res) => { //Cuando se haga una petición GET a la raíz del servidor
-  res.send('Hello World!'); //Se responde con el mensaje "Hello World!"
-}); //Fin de la función
+const app = express();
+const port = 3000;
 
-app.listen(port, () => { //Se pone a escuchar el servidor en el puerto 3000
-  console.log(`Example app listening at http://localhost:${port}`); //Se imprime un mensaje en la consola
+app.use(express.json());
+
+app.get('/', (req, res) => {
+  res.send('Hello World!');
+});
+
+app.get('/nueva-ruta', (req, res) => {
+  res.send('Nueva ruta');
+});
+
+app.get('/categories/:categoryId/products/:productId', (req, res) => {
+  const { categoryId, productId } = req.params;
+  res.json({
+    categoryId,
+    productId
+  });
+});
+
+routerApi(app); // Mover esta línea al final
+
+app.listen(port, () => {
+  console.log(`Example app listening at http://localhost:${port}`);
 });
