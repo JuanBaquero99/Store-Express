@@ -1,47 +1,63 @@
 const express = require('express');
-const { faker } = require('@faker-js/faker'); // Import the 'faker' module from the '@faker-js/faker' package.
-const router = express.Router(); //El router es un objeto que nos permite definir rutas
 
-router.get('/', (req, res) => {
-  const products = [];
-  const { size } = req.query;
-  const limit = size || 10;
+const ProductsService = require('./../services/product.service');
+const validationHandler = require('../middlewares/validator.handler');
+const { createProductSchema, updateProductSchema, getProductSchema } = require('../schemas/product.schema');
 
-  for (let i = 0; i < limit; i++) {
-    products.push({
-      name: faker.commerce.productName(),
-      price: parseInt(faker.commerce.price(), 10),
-      image: faker.image.url(), // Corrección aquí
-    });
-  }
+const router = express.Router();
+const service = new ProductsService();
 
+router.get('/', async (req, res) => {
+  const products = await service.find();
   res.json(products);
 });
 
-router.get('/filter', (req, res) => { // Ruta para filtrar productos
-  res.send('This is the filter endpoint'); // Respuesta de la ruta
+router.get('/filter', (req, res) => {
+  res.send('Yo soy un filter');
 });
 
-//Para no tener error con las rutas que se repiten, se debe colocar la ruta más específica primero
+router.get('/:id',
+  validationHandler(getProductSchema, 'params'),
+  async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const product = await service.findOne(id);
+    res.json(product);
+  } catch (error) {
+    next(error);
+  }
+});
 
-router.get('/:id', (req, res) => {
+router.post('/',
+  validationHandler(createProductSchema, 'body'),
+  async (req, res, next) => {
+  try {
+    const body = req.body;
+    const newProduct = await service.create(body);
+    res.status(201).json(newProduct);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.patch('/:id',
+  validationHandler(updateProductSchema, 'params'),
+  validationHandler(getProductSchema, 'body'),
+  async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const body = req.body;
+    const product = await service.update(id, body);
+    res.json(product);
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.delete('/:id', async (req, res) => {
   const { id } = req.params;
-  // Extract the 'id' parameter from the request URL.
-
-  res.json({
-    id,
-    name: 'Product name',
-    price: 200
-  });
-  // Send a JSON response with the 'id', 'name', and 'price' properties.
-});
-
-router.post('/', (req, res) => { // Ruta para crear productos
-  const { body } = req.body; // Extrae el cuerpo de la solicitud
-  res.status(201).json({ // Envía una respuesta JSON
-    message: 'Created', // Mensaje de respuesta
-    data: body // Datos de la solicitud
-  });
+  const rta = await service.delete(id);
+  res.json(rta);
 });
 
 module.exports = router;

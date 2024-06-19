@@ -1,29 +1,42 @@
 const express = require('express');
-const routerApi = require('./routes/index');
+const cors = require('cors');
+const routerApi = require('./routes');
+
+const { logErrors, errorHandler, boomErrorHandler } = require('./middlewares/error.handler');
 
 const app = express();
 const port = 3000;
 
 app.use(express.json());
 
+const whitelist = ['http://localhost:8080', 'https://myapp.co'];  // Lista blanca
+const options = {
+  origin: (origin, callback) => {
+    if (whitelist.includes(origin) || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido'));
+    }
+  }
+};
+
+app.use(cors());
+
 app.get('/', (req, res) => {
-  res.send('Hello World!');
+  res.send('Hola mi server en express');
 });
 
 app.get('/nueva-ruta', (req, res) => {
-  res.send('Nueva ruta');
+  res.send('Hola, soy una nueva ruta');
 });
 
-app.get('/categories/:categoryId/products/:productId', (req, res) => {
-  const { categoryId, productId } = req.params;
-  res.json({
-    categoryId,
-    productId
-  });
-});
+routerApi(app);
 
-routerApi(app); // Mover esta línea al final
+app.use(logErrors);
+app.use(boomErrorHandler);
+app.use(errorHandler);
+
 
 app.listen(port, () => {
-  console.log(`Example app listening at http://localhost:${port}`);
+  console.log('Mi port' +  port);
 });

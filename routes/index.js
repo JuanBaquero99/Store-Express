@@ -1,13 +1,15 @@
-const express = require('express'); //Agregamos express
+const express = require('express');
 
-const productsRouter = require('./products.router'); //Agregamos la ruta de productos
-const usersRouter = require('./users.router') //Agregamos la ruta de usuarios
+const productsRouter = require('./products.router');
+const categoriesRouter = require('./categories.router');
+const usersRouter = require('./users.router');
 
-function routerApi (app) { //Agregamos la función routerApi. Lo que hace es recibir la aplicación de express
-  const router = express.Router(); //Creamos un objeto router que nos permite definir rutas
-  app.use('/api/v1', router); //Usamos el router en la aplicación de express
-  router.use('/products', productsRouter); //Agregamos la ruta de productos al router
-  router.use('/users', usersRouter); //Agregamos la ruta de usuarios al router
+function routerApi(app) {
+  const router = express.Router();
+  app.use('/api/v1', router);
+  router.use('/products', productsRouter);
+  router.use('/categories', categoriesRouter);
+  router.use('/users', usersRouter);
 }
 
-module.exports = routerApi; //Exportamos la función routerApi
+module.exports = routerApi;
